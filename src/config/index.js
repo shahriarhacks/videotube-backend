@@ -14,6 +14,11 @@ const CONFIG = {
       ACCESS_EXPIRE: process.env.ACCESS_TOKEN_EXPIRE,
       REFRESH_EXPIRE: process.env.REFRESH_TOKEN_EXPIRE,
    },
+   CLOUDINARY: {
+      API_KEY: process.env.CLOUDINARY_API_KEY,
+      API_SECRET: process.env.CLOUDINARY_API_SECRET,
+      CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+   },
 };
 
 export { CONFIG };
