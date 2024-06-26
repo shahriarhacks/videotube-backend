@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { CONFIG } from "./config/index.js";
+import router from "./routes/default.route.js";
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use(express.urlencoded({ extended: true, limit: "32kb" }));
 app.use(express.static("public"));
 app.use(cookieParser());
 
-
+// Calling All API routes
+app.use('/api/v1',router)
 
 export default app;
