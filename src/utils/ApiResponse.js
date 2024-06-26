@@ -6,3 +6,5 @@ class APIResponse {
       this.message = message;
    }
 }
+
+export { APIResponse };
