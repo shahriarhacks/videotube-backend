@@ -4,6 +4,26 @@ import { APIResponse } from "../utils/ApiResponse.js";
 import User from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
+const options = {
+   httpOnly: true,
+   secure: true,
+};
+
+const generateAccessAndRefreshTokens = async (uid) => {
+   try {
+      const user = await User.findById(uid);
+      const accessToken = user.generateAccessToken();
+      const refreshToken = user.generateRefreshToken();
+
+      user.refreshToken = refreshToken;
+      await user.save({ validateBeforeSave: false });
+
+      return { accessToken, refreshToken };
+   } catch (error) {
+      throw new APIError(500, "Something went wrong while generating tokens!");
+   }
+};
+
 const registerUser = asyncHandler(async (req, res) => {
    /**
     * Get user details from frontend
@@ -94,7 +114,25 @@ const loginUser = asyncHandler(async (req, res) => {
    if (!isPasswordValid) {
       throw new APIError(401, "Invalid user credentials!");
    }
-   
+
+   const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
+      user._id
+   );
+   const loggedInUser = await User.findById(user._id).select(
+      "-password -refreshToken"
+   );
+
+   return res
+      .status(200)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", refreshToken, options)
+      .json(
+         new APIResponse(
+            200,
+            { user: loggedInUser, refreshToken, accessToken },
+            "User logged in successfully!!"
+         )
+      );
 });
 
 export { registerUser, loginUser };
