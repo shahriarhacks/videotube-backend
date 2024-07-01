@@ -68,4 +68,33 @@ const registerUser = asyncHandler(async (req, res) => {
       .json(new APIResponse(201, createdUser, "User created successfully!!"));
 });
 
-export { registerUser };
+const loginUser = asyncHandler(async (req, res) => {
+   /**
+    * req.body-> Data
+    * username or email
+    * find the user
+    * check the password
+    * generate the tokens -> access & refresh token
+    * send the tokens on cookies
+    * give a response->200
+    **/
+   const { username, email, password } = req.body;
+   if (!(username || email)) {
+      throw new APIError(400, "username or email must be required");
+   }
+   const user = await User.findOne({
+      $or: [{ username }, { email }],
+   });
+   if (!user) {
+      throw new APIError(404, "User doesn't exist!");
+   }
+
+   const isPasswordValid = await user.isPasswordMatched(password);
+
+   if (!isPasswordValid) {
+      throw new APIError(401, "Invalid user credentials!");
+   }
+   
+});
+
+export { registerUser, loginUser };
