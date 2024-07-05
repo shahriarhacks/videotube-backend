@@ -58,7 +58,15 @@ const registerUser = asyncHandler(async (req, res) => {
       throw new APIError(409, "User with email or username already exist");
    }
    const avatarLocalPath = req.files?.avatar[0]?.path;
-   const coverImageLocalPath = req.files?.coverImage[0]?.path;
+   // const coverImageLocalPath = req.files?.coverImage[0]?.path;
+   let coverImageLocalPath;
+   if (
+      req.files &&
+      Array.isArray(req.files.coverImage) &&
+      req.files.coverImage.length > 0
+   ) {
+      coverImageLocalPath = req.files.coverImage[0].path;
+   }
 
    if (!avatarLocalPath) {
       throw new APIError(400, "Avatar file LocalPath is required");
@@ -305,11 +313,56 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
          $set: updateFields,
       },
       { new: true }
-   );
+   ).select("-password -refreshToken");
 
    return res
       .status(200)
       .json(new APIResponse(200, user, "User Account Details Updated Done!"));
+});
+
+const updateUserAvatar = asyncHandler(async (req, res) => {
+   const avatarLocalPath = req.file?.path;
+
+   if (!avatarLocalPath) {
+      throw new APIError(400, "Avatar file missing!!");
+   }
+   const avatar = await uploadOnCloudinary(avatarLocalPath);
+   if (!avatar && !avatar.url) {
+      throw new APIError(500, "Error while uploading avatar on server!!");
+   }
+
+   const user = await User.findByIdAndUpdate(
+      req.user?._id,
+      {
+         $set: { avatar: avatar.url },
+      },
+      { new: true }
+   ).select("-password -refreshToken");
+   return res
+      .status(200)
+      .json(new APIResponse(200, user, "User Avatar Updated Done!"));
+});
+const updateUserCoverImage = asyncHandler(async (req, res) => {
+   const coverImageLocalPath = req.file?.path;
+
+   if (!coverImageLocalPath) {
+      throw new APIError(400, "Avatar file missing!!");
+   }
+   const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+   if (!coverImage && !coverImage.url) {
+      throw new APIError(500, "Error while uploading cover image on server!!");
+   }
+
+   const user = await User.findByIdAndUpdate(
+      req.user?._id,
+      {
+         $set: { coverImage: coverImage.url },
+      },
+      { new: true }
+   ).select("-password -refreshToken");
+   return res
+      .status(200)
+      .json(new APIResponse(200, user, "User Avatar Updated Done!"));
 });
 
 export {
@@ -320,4 +373,6 @@ export {
    changeCurrentPassword,
    getCurrentUser,
    updateAccountDetails,
+   updateUserAvatar,
+   updateUserCoverImage,
 };
