@@ -196,23 +196,120 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
 const changeCurrentPassword = asyncHandler(async (req, res) => {
    const { oldPassword, newPassword, confirmPassword } = req.body;
-   const user = await User.findById(req.user?._id);
 
-   const isPasswordMatched = await user.isPasswordMatched(oldPassword);
-   if (!isPasswordMatched) {
-      throw new APIError(400, "Invalid old password!!");
-   }
    if (!(newPassword === confirmPassword)) {
       throw new APIError(
          400,
          "New Password and Confirm Password not matched!!"
       );
    }
+
+   const user = await User.findById(req.user?._id);
+
+   const isPasswordMatched = await user.isPasswordMatched(oldPassword);
+   if (!isPasswordMatched) {
+      throw new APIError(400, "Invalid old password!!");
+   }
+
    user.password = newPassword;
    await user.save({ validateBeforeSave: false });
    return res
       .status(200)
       .json(new APIResponse(200, {}, "Password changed successfully!!"));
+});
+
+const getCurrentUser = asyncHandler(async (req, res) => {
+   return res
+      .status(200)
+      .json(
+         new APIResponse(200, req.user, "Current user retrieve successfully!!")
+      );
+});
+
+// const updateAccountDetails = asyncHandler(async (req, res) => {
+//    let user = {};
+//    const { fullName, email, username } = req.body;
+//    if (fullName && !email && !username) {
+//       user = await User.findByIdAndUpdate(
+//          req.user?._id,
+//          {
+//             $set: { fullName },
+//          },
+//          { new: true }
+//       );
+//    } else if (email && !fullName && !username) {
+//       user = await User.findByIdAndUpdate(
+//          req.user?._id,
+//          {
+//             $set: { email },
+//          },
+//          { new: true }
+//       );
+//    } else if (username && !fullName && !email) {
+//       user = await User.findByIdAndUpdate(
+//          req.user?._id,
+//          {
+//             $set: { username },
+//          },
+//          { new: true }
+//       );
+//    } else if (email && fullName && !username) {
+//       user = await User.findByIdAndUpdate(
+//          req.user?._id,
+//          {
+//             $set: { email, fullName },
+//          },
+//          { new: true }
+//       );
+//    } else if (email && username && !fullName) {
+//       user = await User.findByIdAndUpdate(
+//          req.user?._id,
+//          {
+//             $set: { email, username },
+//          },
+//          { new: true }
+//       );
+//    } else if (fullName && username && !email) {
+//       user = await User.findByIdAndUpdate(
+//          req.user?._id,
+//          {
+//             $set: { fullName, username },
+//          },
+//          { new: true }
+//       );
+//    } else {
+//       user = await User.findByIdAndUpdate(
+//          req.user?._id,
+//          {
+//             $set: { email, username, fullName },
+//          },
+//          { new: true }
+//       );
+//    }
+//    return res
+//       .status(200)
+//       .json(new APIResponse(200, user, "User Account Details Updated Done!"));
+// });
+
+const updateAccountDetails = asyncHandler(async (req, res) => {
+   const { fullName, email, username } = req.body;
+   const updateFields = {};
+
+   if (fullName) updateFields.fullName = fullName;
+   if (email) updateFields.email = email;
+   if (username) updateFields.username = username;
+
+   const user = await User.findByIdAndUpdate(
+      req.user?._id,
+      {
+         $set: updateFields,
+      },
+      { new: true }
+   );
+
+   return res
+      .status(200)
+      .json(new APIResponse(200, user, "User Account Details Updated Done!"));
 });
 
 export {
@@ -221,4 +318,6 @@ export {
    logoutUser,
    refreshAccessToken,
    changeCurrentPassword,
+   getCurrentUser,
+   updateAccountDetails,
 };
