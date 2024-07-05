@@ -1,6 +1,7 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 import { CONFIG } from "../config/index.js";
+import { APIError } from "./ApiError.js";
 
 // Configuration
 cloudinary.config({
@@ -27,4 +28,22 @@ const uploadOnCloudinary = async (localFilePath) => {
    }
 };
 
-export { uploadOnCloudinary };
+const deleteFromCloudinary = async (cloudinaryUrl) => {
+   try {
+      // Extract the public ID from the image URL
+      const publicId = cloudinaryUrl.match(/\/([^/]+)\.[^/.]+$/)[1];
+
+      // Delete the image using the public ID
+      const response = await cloudinary.uploader.destroy(publicId);
+
+      if (!response.result === "ok") {
+         throw new APIError(500, "Error while deleting!!");
+      }
+      return response;
+   } catch (error) {
+      throw new APIError(500, error?.message || "Error while deleting!!");
+   }
+};
+export { deleteFromCloudinary };
+
+export { uploadOnCloudinary, deleteFromCloudinary };
