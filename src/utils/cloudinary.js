@@ -44,6 +44,5 @@ const deleteFromCloudinary = async (cloudinaryUrl) => {
       throw new APIError(500, error?.message || "Error while deleting!!");
    }
 };
-export { deleteFromCloudinary };
 
 export { uploadOnCloudinary, deleteFromCloudinary };

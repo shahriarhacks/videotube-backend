@@ -37,9 +37,11 @@ const userSchema = new Schema(
       password: {
          type: String,
          required: true,
+         // select: false,
       },
       refreshToken: {
          type: String,
+         // select: false,
       },
       watchHistory: [
          {

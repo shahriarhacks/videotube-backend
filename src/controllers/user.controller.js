@@ -150,8 +150,8 @@ const logoutUser = asyncHandler(async (req, res) => {
    await User.findOneAndUpdate(
       req.user?._id,
       {
-         $set: {
-            refreshToken: undefined,
+         $unset: {
+            refreshToken: 1,
          },
       },
       {
@@ -177,7 +177,6 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       );
 
       const user = await User.findById(decoded?._id);
-
       if (!user) {
          throw new APIError(401, "Invalid refresh token!!");
       }
